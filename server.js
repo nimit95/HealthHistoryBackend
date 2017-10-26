@@ -1,13 +1,13 @@
 const express = require('express');
 
 const app = express();
-
+const cors = require('cors');
 const admin = require("firebase-admin");
 
-const serviceAccount = require("/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json");
+const serviceAccount = require("./HealthHistory-3992571e7843.json");
 var gcs = require('@google-cloud/storage')({
     projectId: 'healthhistory-459fe',
-    keyFilename: '/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json'
+    keyFilename: './HealthHistory-3992571e7843.json'
 });
 
 admin.initializeApp({
@@ -16,11 +16,11 @@ admin.initializeApp({
 });
 
 
-admin.initializeApp(functions.config().firebase);
+// admin.initializeApp(functions.config().firebase);
 
 //
 // Get a reference to the database service
-let database = admin.database();
+let database = admin.database().ref();
 
 
 function addFileToStorage(userId, file) {
@@ -53,17 +53,18 @@ function addFileToStorage(userId, file) {
 
 
 
-function getUserDetails(userId) {
+ function getUserDetails(userId, cb) {
+
     let userRef = database.child("users").child(userId);
 
     userRef.on("value", function (snapshot) {
 
-        console.log(snapshot.val());
         userRef.off("value");
-        return snapshot.val();
+        cb(snapshot.val());
 
     }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
+        cb(false);
     });
 }
 
@@ -113,6 +114,26 @@ function notifyUser(userRef, title) {
         console.log("The read failed: " + errorObject.code);
     });
 }
+
+
+app.use(express.json());
+
+app.use(express.urlencoded({extended: true}));
+
+app.use(cors());
+
+app.get('/user/:userid', function (req, res, next) {
+  console.log(req.params.userid);
+  let user =  getUserDetails(req.params.userid, function (user) {
+    if(!user){
+      return res.send("No User Found.")
+    };
+    console.log(user);
+    res.send(user);
+  });
+});
+
+
 
 
 app.listen(5555, function () {
