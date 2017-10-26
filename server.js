@@ -3,6 +3,8 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const admin = require("firebase-admin");
+const multer  = require('multer')
+var upload = multer({ dest: 'uploads/' })
 
 const serviceAccount = require("./HealthHistory-3992571e7843.json");
 var gcs = require('@google-cloud/storage')({
@@ -133,7 +135,9 @@ app.get('/user/:userid', function (req, res, next) {
   });
 });
 
+app.post('/user/:userid',  upload.single('avatar'),function (req, res, next) {
 
+});
 
 
 app.listen(5555, function () {
