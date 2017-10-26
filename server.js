@@ -48,7 +48,10 @@ function addFileToStorage(userId, file) {
 
     blobStream.end(file.buffer);
 
+
 }
+
+
 
 function getUserDetails(userId) {
     let userRef = database.child("users").child(userId);
