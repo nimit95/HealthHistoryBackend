@@ -1,7 +1,7 @@
 const express = require('express');
 
 const app = express();
-
+const cors = require('cors');
 const admin = require("firebase-admin");
 
 const serviceAccount = require("./HealthHistory-3992571e7843.json");
@@ -115,6 +115,8 @@ function notifyUser(userRef, title) {
 app.use(express.json());
 
 app.use(express.urlencoded({extended: true}));
+
+app.use(cors());
 
 app.get('/user/:userid', function (req, res, next) {
   console.log(req.params.userid);
