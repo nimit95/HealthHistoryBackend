@@ -4,8 +4,11 @@ const app = express();
 
 const admin = require("firebase-admin");
 
-const serviceAccount = require("/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json");
-
+/*const serviceAccount = require("/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json");
+var gcs = require('@google-cloud/storage')({
+    projectId: 'healthhistory-459fe',
+    keyFilename: '/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json'
+});*/
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -20,8 +23,26 @@ admin.initializeApp(functions.config().firebase);
 let database = admin.database();
 
 
-function addFileToStorage(userId, title) {
+/*function addFileToStorage(userId, title) {
 
+    var bucket = admin.storage().bucket();
+
+
+
+}*/
+
+function getUserDetails(userId) {
+    let userRef = database.child("users").child(userId);
+
+    userRef.on("value", function (snapshot) {
+
+        console.log(snapshot.val());
+        userRef.off("value");
+        return snapshot.val();
+
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
 }
 
 function addFileLinkToUser(userId, title, fileLink) {
@@ -44,11 +65,12 @@ function notifyUser(userRef, title) {
         let registrationToken = snapshot.val();
 
         // See the "Defining the message payload" section below for details
-    // on how to define a message payload.
+        // on how to define a message payload.
         var payload = {
-            "notification" : {
-                "body" : "Reports are ready",
-                "title" : title
+            "notification": {
+                "body": "Reports are ready",
+                "title": title,
+                "sound": "default"
             }
         };
 
@@ -64,7 +86,7 @@ function notifyUser(userRef, title) {
                 console.log("Error sending message:", error);
             });
 
-        ref.off("value");
+        userRef.child("firebaseInsstanceId").off("value");
     }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
     });
