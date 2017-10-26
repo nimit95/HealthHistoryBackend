@@ -93,6 +93,18 @@ function notifyUser(userRef, title) {
 }
 
 
+app.use(express.json());
+
+app.use(express.urlencoded({extended: true}));
+
+app.get('/user/:userid', function (req, res, next) {
+  let user = getUserDetails(req.params.userid);
+  console.log(user);
+});
+
+
+
+
 app.listen(5555, function () {
     console.log("server start at port http://localhost:" + 5555)
 });
