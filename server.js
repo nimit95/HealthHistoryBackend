@@ -4,11 +4,11 @@ const app = express();
 
 const admin = require("firebase-admin");
 
-/*const serviceAccount = require("/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json");
+const serviceAccount = require("/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json");
 var gcs = require('@google-cloud/storage')({
     projectId: 'healthhistory-459fe',
     keyFilename: '/home/nimit/NodeJS/HealthHistory/HealthHistory-3992571e7843.json'
-});*/
+});
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -23,13 +23,32 @@ admin.initializeApp(functions.config().firebase);
 let database = admin.database();
 
 
-/*function addFileToStorage(userId, title) {
+function addFileToStorage(userId, file) {
+    let time = new Date().getTime();
+    var bucket = admin.storage().bucket("/" + userId + "/" + "images");
 
-    var bucket = admin.storage().bucket();
+    newFileName = time ;
+    let fileUpload = bucket.file(newFileName);
 
+    const blobStream = fileUpload.createWriteStream({
+        metadata: {
+            contentType: file.mimetype
+        }
+    });
 
+    blobStream.on('error', (error) => {
+        reject('Something is wrong! Unable to upload at the moment.');
+    });
 
-}*/
+    blobStream.on('finish', () => {
+        // The public URL can be used to directly access the file via HTTP.
+        const url = format(`https://storage.googleapis.com/${bucket.name}/${fileUpload.name}`);
+        resolve(url);
+    });
+
+    blobStream.end(file.buffer);
+
+}
 
 function getUserDetails(userId) {
     let userRef = database.child("users").child(userId);
@@ -45,8 +64,8 @@ function getUserDetails(userId) {
     });
 }
 
-function addFileLinkToUser(userId, title, fileLink) {
-    let time = new Date().getTime();
+function addFileLinkToUser(userId, title, time,fileLink) {
+
     let userRef = database.child("users").child(userId);
     let newImageRef = userRef.child("userImages").child(time);
     newImageRef.set({
